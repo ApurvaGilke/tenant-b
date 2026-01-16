@@ -88,7 +88,7 @@
                 </requireMavenVersion>
                 <requireJavaVersion>
                   <message>Maven must be executed with a Java 11 JRE or higher.</message>
-                  <version>11</version>
+                  <version>[11,)</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
