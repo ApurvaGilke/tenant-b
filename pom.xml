@@ -71,7 +71,7 @@
         <version>3.0.1</version>
         <inherited>true</inherited>
       </plugin>
-      <!-- Maven Enforcer Plugin -->
+      <!-- Maven Enforcer Plugin disabled for Cloud Manager build
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -95,6 +95,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
       <!-- Maven Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
