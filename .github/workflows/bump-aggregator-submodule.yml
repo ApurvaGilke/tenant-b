@@ -1,0 +1,67 @@
+name: Bump aggregator submodule (tenant-b)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tenant-b
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout aggregator repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.AGGREGATOR_REPO }}
+          ref: ${{ secrets.AGGREGATOR_BRANCH }}
+          token: ${{ secrets.AGGREGATOR_PUSH_TOKEN }}
+          path: aggregator
+          submodules: false
+          fetch-depth: 0
+
+      - name: Update tenant-b submodule pointer in aggregator
+        run: |
+          cd aggregator
+
+          # Make sure submodule URL is correct
+          git submodule sync --recursive
+
+          # Update only tenant-b submodule to the latest remote commit on main
+          git submodule update --init tenant-b
+          git -C tenant-b fetch origin main
+          git -C tenant-b checkout main
+          git -C tenant-b pull --ff-only origin main
+
+          # Stage pointer update
+          git add tenant-b
+
+          # If nothing changed, exit clean
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No submodule pointer change."
+            exit 0
+          fi
+
+          # Create a branch
+          BRANCH="bump-tenant-b-${GITHUB_SHA::7}"
+          git checkout -b "$BRANCH"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git commit -m "Bump tenant-b submodule to ${GITHUB_SHA::7}"
+          git push origin "$BRANCH"
+
+      - name: Open PR into aggregator main
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.AGGREGATOR_PUSH_TOKEN }}
+          path: aggregator
+          branch: bump-tenant-b-${{ github.sha }}
+          title: "Bump tenant-b submodule"
+          body: "Auto-update tenant-b submodule pointer to latest commit."
+          base: ${{ secrets.AGGREGATOR_BRANCH }}
