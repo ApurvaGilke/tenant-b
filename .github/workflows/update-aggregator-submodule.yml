@@ -1,16 +1,14 @@
-# tenant-a/.github/workflows/update-aggregator-submodule.yml
-name: Notify multi-tenant-poc aggregator repository
+name: Notify aggregator workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop, release/**]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send repository_dispatch
-        uses: peter-evans/repository-dispatch@v3
+      - uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.AGGREGATOR_PUSH_TOKEN }}
           repository: ${{ secrets.AGGREGATOR_REPO }}
@@ -18,5 +16,6 @@ jobs:
           client-payload: |
             {
               "tenant": "tenant-b",
-              "branch": "main"
+              "branch": "${{ github.ref_name }}",
+              "commit_sha": "${{ github.sha }}"
             }
