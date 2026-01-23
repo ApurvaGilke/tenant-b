@@ -1,0 +1,36 @@
+name: Sync tenant-b to Cloud Manager
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "GitHub Actions"
+          git config user.email "noreply@github.com"
+
+      - name: Add Cloud Manager remote
+        run: |
+          if ! git remote | grep -q adobe; then
+            git remote add adobe \
+              https://${{ secrets.CM_USER }}:${{ secrets.CM_PASSWORD }}@git.cloudmanager.adobe.com/ags2629/cloud-adobe-tenant-b/
+          fi
+
+      - name: Push current branch to Cloud Manager
+        run: |
+          # github.ref_name is just the branch name (e.g. main, develop, release/1.0.0)
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+
+          echo "Syncing branch '${BRANCH_NAME}' to Cloud Manager"
+          git push --force adobe "${BRANCH_NAME}"
